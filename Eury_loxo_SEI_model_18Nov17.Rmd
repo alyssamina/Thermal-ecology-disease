@@ -1,0 +1,410 @@
+---
+title: "Eury_loxo_SEI_model"
+author: "Alyssa-Lois Gehman"
+date: "11/20/2017"
+output:
+  html_document:
+    fig_height: 8
+    fig_width: 9
+  pdf_document:
+    fig_height: 8
+    fig_width: 9
+---
+
+#Host and parasite thermal ecology jointly determine the effect of climate warming on epidemic dynamics 
+Authors:  Alyssa-Lois M. Gehman, Richard J. Hall and James E. Byers
+Correspondence to: 	Alyssa-Lois M. Gehman
+
+#This code produces the seasonal host-parasite dynamics used in manuscript, based on weekly temperature data
+
+*Requirements*
+  a. download and install package deSolve
+  b. download and place folder 'Gehman_etal_Code_2017' on your desktop
+
+*1 - Functional fits to the data*
+These define the best fit model parameters for the temperature dependent rates in the SEI mode, as parameterized from the temperature data, and recreate Figure 1C-E.
+
+
+```{r briere fit, echo=FALSE}
+
+#make sure this file and all data are in same directory 
+
+
+# 1a. function for the Briere (Eq. 2, fun.b) and modified Briere (Eq. 3, fun.mb) 
+#     used to plot the best fit models
+      #Input variables c, T0 (=Tmin), Tm (=Tmax), and m are estimated from the nls best fit (1b)
+      # h.temp is a number series that encompases the range of temperature values 
+      # you want to plot over 
+      fun.mb=function(c,T0,Tm,h.temp,m){c*(-h.temp+T0+Tm)*(Tm-h.temp)*(h.temp-T0)^(1/m)}
+      fun.b=function(c,T0,Tm,h.temp,m){c*h.temp*(h.temp-T0)*(Tm-h.temp)^(1/m)}
+
+#1b. The data for parasite reproduction over temperature fit to a modified Briere (Fig. 1B).
+#     The output of the nonlinear least squares fit gives estimates of c, T0, Tm.  
+      # read in data for parasite reproduction across temperature
+      beta.data<-read.csv("parasite_rep_27Aug17.csv")  
+      #add the path for the directory you are working in to access this data
+
+      # The best fit nonlinear least squares model with 1/m=0.65
+      rmb<- nls(lxmx ~ c*(-temp+T0+Tm)*(Tm-temp)*(temp-T0)^(0.65), data=beta.data, 
+                start=list(c=12.083, T0=9.875, Tm=30.753))
+  
+      # temperature simulations - set to the range of values that you want to plot 
+      # the modified Briere fit over
+      tempsim=seq(1, 35, by=.01)
+      # Figure 1B - plotting the mean parasite reproductive output by temperature 
+      plot(beta.data$temp, beta.data$lxmx, 
+           pch=16, ylim=c(0, 25000), xlim=c(0,35),
+           xlab="Temperature", ylab="Parasite Reproduction (lxmx)", col="deeppink", axes=F)
+      #plotting error bars of the standard error of parasite reproductive output
+      segments(beta.data$temp, y0=beta.data$lxmx.neg, y1=beta.data$lxmx.pos,
+               col="deeppink", lwd=2)
+      #plotting the modified Briere fit with c=12.083, T0=9.875, Tm=30.753,(from rmb) 
+      # and across temperature range (tempsim)
+      lines(tempsim, fun.mb(12.083, 9.875,30.753,tempsim,1/0.65),
+            lwd=3, col="deeppink") #rmb - model the estimates came from
+      #plotting the x-axis
+      axis(1, c(0,5,10,15,20,25,30,35), c(0,5,10,15,20,25,30,35)) 
+      #plotting the y-axis
+      axis(2, c(0,5000, 10000, 15000, 20000))
+
+      #The output with the estimates for c, T0 and Tm
+      rmb
+
+
+#1.c The data for susceptible expected lifespan over temperature fit to a Briere (Fig. 1C). The output of the nonlinear least squares fit gives estimates of c, T0, Tm.   
+
+      #read in data for susceptible expected lifespan over temperature
+      S.data=read.csv("Susceptible_lifespan_27Aug17.csv") #add the path for the directory you are working in to access this data
+
+
+      # The best fit nonlinear least squares model with 1/m=2
+      hb1 <- nls(S.surv~c*S.temp*(S.temp-T0)*(Tm-S.temp)^(2), data=S.data, start=list(c=0.0008336, T0=4.05, Tm=33.85))
+
+      # temperature simulations - set to the range of values that you want to plot the modified Briere fit over
+      sus.temp=seq(2.29,35,1)
+
+      #Figure 1C - plotting the mean susceptible expected lifespan
+      plot(S.data$S.temp, S.data$S.surv,
+           pch=16, ylim=c(0,60), xlim=c(0,35),axes=F,
+           xlab="Temperature", ylab="Expected Lifespan (Weeks)", col="green")
+      #plotting error bars of the standard error of susceptible host expected lifespan
+      segments(S.data$S.temp, y0=S.data$S.surv-S.data$S.surv.se, y1=S.data$S.surv+S.data$S.surv.se, col="green")
+      #plotting the Briere fit with c=0.0006923, T0=3.136, Tm=34.8, (from hb1) and across temperature range (sus.temp)
+      lines(sus.temp, fun.b(0.0006923,3.136,34.8,sus.temp,1/2), lty=1, lwd=3, col="green")
+      #plotting the x-axis
+      axis(1, c(0,5,10,15,20,25,30,35), c(0,5,10,15,20,25,30,35))
+      #plotting the y-axis
+      axis(2, c(0,20,40,60))
+      
+      #The output with the estimates for c, T0 and Tm
+      hb1
+      
+# 1d. The data for exposed expected lifespan over temperature fit to a modified Briere (Fig. 1D). The output of the nonlinear least squares fit gives estimates of c, T0, Tm. 
+      ## read in the data for exposed expected lifespan over temperature
+      E.data=read.csv("Exposed_lifespan_27Aug17.csv") #add the path for the directory you are working in to access this data
+
+      # The best fit nonlinear least squares model with 1/m=0.4
+      vmb1 <- nls(E.surv ~ c*(-E.temp+T0+Tm)*(Tm-E.temp)*(E.temp-T0)^(0.4), data=E.data, start=list(c=.028, T0=4.9, Tm=36))
+
+      # temperature simulations - set to the range of values that you want to plot the modified Briere fit over
+      e.temp=seq(4,35,0.01)
+
+      #Figure 1D - plotting the mean exposed expected lifespan
+      plot(E.data$E.temp, E.data$E.surv,
+           pch=16, ylim=c(0,60), xlim=c(0,35), axes=F,
+           xlab="Temperature", ylab="Expected Lifespan (Weeks)", col="purple")
+      #plotting error bars of the standard error of exposed host expected lifespan
+      segments(E.data$E.temp, y0=E.data$E.surv-E.data$E.surv.se, y1=E.data$E.surv+E.data$E.surv.se, col="purple")
+      #plotting the modified Briere fit with c=0.03393, T0=4.95039, Tm=34.43724 (from vmb1) and across temperature (e.temp)
+      lines(e.temp,fun.mb(0.03393,4.95039,34.43724,e.temp,1/0.4), lwd=3, col="purple")
+      #plotting the x-axis
+      axis(1, c(0,5,10,15,20,25,30,35), c(0,5,10,15,20,25,30,35))
+      #plotting teh y-axis
+      axis(2, c(0,20,40,60))
+      
+     #The output with the estimates for c, T0 and Tm
+      vmb1
+
+#1e. The data for infected expected lifespan over temperature fit to a modified Briere (Fig. 1E). The output of the nonlinear least squares fit gives estimates of c, T0, Tm. 
+      ## read in data for infected expected lifespan over temperature
+      I.data=read.csv("Infected_lifespan_27Aug17.csv") #add the path for the directory you are working in to access this data
+
+      # The best fit nonlinear least squares model with 1/m=0.3
+      imb <- nls(I.surv ~ c*(-I.temp+T0+Tm)*(Tm-I.temp)*(I.temp-T0)^(0.3), data=I.data, start=list(c=0.04347, T0=4.99901, Tm=31.85831))
+      
+      #temp for plotting Briere
+      i.temp=seq(0,31.29,0.05)
+
+      #Figure 1E - plotting the mean expected infected lifespan over temperature
+      plot(I.data$I.temp, I.data$I.surv,
+           pch=16, ylim=c(0,60), xlim=c(0,35),axes=F,
+           xlab="Temperature", ylab="Expected Lifespan (Weeks)", col="orange")
+      #plotting error bars of the standard error of infected host expected lifespan
+      segments(I.data$I.temp, y0=I.data$I.surv-I.data$I.surv.se, y1=I.data$I.surv+I.data$I.surv.se, col="orange")
+      #plotting the modified Briere fit with c=.03308, T0=4.94846, Tm=31.29617 (from imb) and across temperature (i.temp)
+      lines(i.temp, fun.mb(.03308,4.94846,31.29617,i.temp,1/0.5), lwd=3, col="orange")
+      #plotting x-axis
+      axis(1, c(0,5,10,15,20,25,30,35), c(0,5,10,15,20,25,30,35))
+      #plotting y-axis
+      axis(2, c(0,20,40,60))
+      
+      #The output with the estimates for c, T0 and Tm
+      imb
+
+
+```
+
+
+*2 - The model equations*
+
+Must be run for sections 3 and 4 to work. 
+
+```{r rhizo sei model, echo=FALSE}
+
+#library required to run the model
+require(deSolve)
+
+#remove all lists from previous runs
+rm(list=ls(all=TRUE)) 
+
+#THE MODEL (Eq 12,13 and 14):
+rhizo_sei <- function(t,y,params) {
+  S = y[1]
+  E = y[2]
+  I = y[3]
+  
+  with(as.list(c(params)), {
+    dS <- delta - (mu_s * S) - (beta * S * I)
+    
+    dE <- (beta * S * I) - (tau * E) - (mu_e * E)
+    
+    dI <- (tau * E) - (mu_i * I)
+    
+    dy = c(dS,dE,dI)
+    list(dy)
+  })
+}
+
+
+### functions from Briere Fits
+fun.mb=function(c,T0,Tm,h.temp,m){c*(-h.temp+T0+Tm)*(Tm-h.temp)*(h.temp-T0)^(1/m)}
+fun.b=function(c,T0,Tm,h.temp,m){c*h.temp*(h.temp-T0)*(Tm-h.temp)^(1/m)}
+
+
+```
+
+*3 - Evaluating climate change effects with the model*
+
+Below we use thermal performance curves (Section 1) to parameterize how host mortality and transmission rates depend on weekly mean temperatures; the other parameters were estimated from the literature, or chosen to give good quantitative agreement with field data on host abundance and infection prevalence by season and subject to extensive sensitivity analyses (methods C.ii and iii). 
+
+The temperatures used are mean weekly temperatures from a mooring that is part of the Georgia Coastal Ecosystems Long Term Ecological Research program (GCE-LTER) that measured temperature at a depth of ~1m (temp0), the approximate depth of water found over an oyster reef in Georgia, and thus the thermal environment experienced by E. depressus and L. panopaei.
+
+The model runs with ambient temperature (temp0), then ambient +1 and +2ºC (temp1 and temp2), then the mean temperature change from 1970-2008 (temp1.6) and seasonally varying change (temp.season) from 1970-2008 (tempseas). 
+
+To run this code, first run the code in section 2.
+
+
+```{r rhizo sei model - varying temp, echo=FALSE, warning=FALSE}
+
+rm(total_prev) ; rm(pop); rm(pop_e_temp); rm(pop_i_temp); rm(pop_s_temp) # remove variables from previous runs
+
+
+### Temperature data - must be in the form of mean weekly temperatures - 1 mean temperature for each of 52 weeks.
+
+# GCE data - load temperature data
+gce10.data=read.csv("gce10.wk.mean_6Dec15.csv") #add the path for the directory you are working in to access this data
+#create a variable with the mean weekly temperatures in it
+gce10.wk.mean=gce10.data$V1
+
+# Set seasonally varying climate change
+temp.season=c(rep(1.5,11),rep(0.67,13),rep(0.89,13),rep(0.61,13),rep(1.5,2)) # based on 1970-2008, Carl, Mellilo and Peterson 2009
+
+# Set up climate change scenarios
+temp0=data.frame(wk=gce10.wk.mean[1:52]) #ambient temperature
+temp1=data.frame(wk=gce10.wk.mean[1:52]+1) #ambient +1ºC temperature
+temp2=data.frame(wk=gce10.wk.mean[1:52]+2)  #ambient +2ºC temperature
+temp0.89=data.frame(wk=gce10.wk.mean[1:52]+0.89) #ambient +0.89ºC temperature
+tempseas=data.frame(wk=gce10.wk.mean[1:52]+temp.season) #ambient seasonally varying temperature change
+
+## Combine the climate change scenarios into a data frame
+tempramp=data.frame(temp0,temp1,temp2,temp0.89,tempseas)
+
+### Running model with varying temperature based on GCE annual data 
+
+#THE PARAMETERS:
+times = seq(0,1, by=0.1) 
+tau = 0.04       # tau set to 25 weeks (1/25=0.04)
+
+ystart = c(S=5000,E=10,I=2000) # The starting values for the Susceptible (S), Exposed (E) and Infected (I)
+
+nyears=10        # how many years we want to run the model for
+nweeks=52*nyears     # translating year to weeks
+
+#creating empty vectors to fill with model output
+total_prev=matrix(rep(0, length(tempramp)*length(1:nweeks)), nrow=length(1:nweeks)) #prevalence by week 
+pop_i_temp=matrix(rep(0, length(tempramp)*length(1:nweeks)), nrow=length(1:nweeks)) #infected population by week
+pop_e_temp=matrix(rep(0, length(tempramp)*length(1:nweeks)), nrow=length(1:nweeks)) #exposed population by week
+pop_s_temp=matrix(rep(0, length(tempramp)*length(1:nweeks)), nrow=length(1:nweeks)) #suscpeptible population by week
+mu_i_temp=matrix(rep(0, length(tempramp)*length(1:nweeks)), nrow=length(1:nweeks)) #infected mortality rate by week (1/expected lifespan)
+mu_e_temp=matrix(rep(0, length(tempramp)*length(1:nweeks)), nrow=length(1:nweeks)) #exposed moratlity rate by week (1/expected lifespan)
+mu_s_temp=matrix(rep(0, length(tempramp)*length(1:nweeks)), nrow=length(1:nweeks)) #susceptible mortality rate by week (1/expected lifespan)
+beta_time=matrix(rep(0, length(tempramp)*length(1:nweeks)), nrow=length(1:nweeks)) #parasite reproduction by week
+
+#set up forloop to cycle through the temperature scenarios
+for(j in 1:length(tempramp)){
+   tempset=tempramp[j]  #input the temperatures to run
+   ystart = c(S=5000,E=10,I=2000)
+   #set up a forloop to cycle through the weeks in the model
+    for(i in 1:nweeks){
+       # weekly variance set up 
+        wk=i %% 52                      # Get the week of the year  
+        wk.fix=if (wk==0) +1 else wk    # Fix the 0 week and make it a 1
+        temp=tempset[wk.fix,]     # call the temp for each week (from four years of weekly averaged gce10 temps)
+        # functional fit - plus a correction with mortality set at a relative maximum when the model goes above the thermal limit of susceptible mortality (34.8ºC)
+        mu_s=if (temp>34.8) 6 else 1/fun.b(0.0006923,3.136,34.8,temp, 1/2) 
+        # function fit for exposed mortality with a correction set at relative maximum when the model goes above the thermal limit of exposed mortality (34.43)
+        mu_e=if (temp>34.43) 6 else 1/fun.mb(0.03393,4.95039,34.43724,temp,1/0.4) 
+        # functional fit - plus a correction with mortality set at a relative maximum when the model goes above the thermal limit of infected mortality (31.104ºC)
+        mu_i=if (temp>31.104) 6 else 1/fun.mb(0.04414, 4.99944, 32.10496,temp, 1/0.3) 
+        # Host recruitment is turned on between 32 and 38 weeks
+        delta=if (wk.fix>31 & wk.fix<37) 2400 else 0 
+        # functional fit - plus a correction with mortality set at a relative maximum when the model goes above the thermal limit of infected mortality (30.75ºC)
+        beta=if (temp>30.75) 0 else fun.mb(0.0000004, 9.875,30.753, temp, 1/0.65)   
+        # a string of the parameters set by temperature
+        params=c(beta, mu_s, mu_e, mu_i, delta, tau)
+            # solve equation
+            outd = lsoda(ystart,times,rhizo_sei,params) # times is between 0 and 1
+            # output population for each week
+            Sfinal = tail(outd,n=1)[2]
+            Efinal = tail(outd,n=1)[3]
+            Ifinal = tail(outd,n=1)[4]
+            # output mortality rates for each week
+            mu_sfinal= tail(mu_s)
+            mu_efinal= tail(mu_e)
+            mu_ifinal= tail(mu_i)
+            # oubtput beta for each week
+            beta_ifinal=tail(beta)
+           # write prevalence to i,j entry of matrix
+            total_prev[i,j]=Ifinal/(Sfinal+Efinal+Ifinal) 
+            #write population to i,j entry of matrix
+            pop_s_temp[i,j]=Sfinal
+            pop_e_temp[i,j]=Efinal
+            pop_i_temp[i,j]=Ifinal
+            ## write mu to i,j entry of the matrix
+            mu_s_temp[i,j]=mu_sfinal
+            mu_e_temp[i,j]=mu_efinal
+            mu_i_temp[i,j]=mu_ifinal
+            ## write beta to i,j entry of the matrix
+            beta_time[i,j]=beta_ifinal
+            # reset ystart with the output from that week
+            ystart=c(Sfinal, Efinal, Ifinal)
+      } # end i loop
+} # end j loop
+
+
+```
+
+
+*4 Plotting climate change effects*
+
+This code using the model output from section 3 and creates Figure 3.  For this code to work first section 2 and 3 must have been run.
+
+```{r - climate change plots, echo=FALSE, }
+
+## graphic settings 
+week=c(1:52) #weeks in a year
+m.tic=c(2,6,10,15,20,24,28,32,36,41,45,50) #tick locations for month labeling
+m.lab=c("Jan", "", "Mar", "", "May", "", "July", "", "Sept", "", "Nov", "") #month labeling
+col_pap=c("#fdcc8a", "#fc8d59", "#d7301f","#df65b0",  "#980043") #colors for the graphics
+
+
+par(mfrow=c(3,2)) #set up 3 rows and 2 columns of graphs
+############################################################
+#########  first row - water temp    #####################
+############################################################
+### [1,1] amb +CC
+  par(mar=c(2.1,4.1,2.1,2.1)) #Settings for the margins that arrange multiple graphs within one page 
+  plot("","", xlim=c(0,52), ylim=c(10,35), 
+        axes=F, xlab="", ylab="Temperature (ºC)", main="Annual Mean Temperature Increase", cex.lab=1.4)
+          for(i in 1:3){
+              lines(week, tempramp[1:52,i], col=col_pap[i],lwd=3) #loop with temperature scenario 1-3
+              }
+        axis(2, seq(10,35, 5), cex.axis=1.4) #y axis with prevalence
+        axis(1,m.tic, labels=m.lab, cex.axis=1.4) # x-axis with months
+        text(2,34,"A", cex=1.4) # The letter label
+        text(1,31, "Ambient +2ºC", col="#d7301f", pos=4, cex=1.6) # label for ambient +2ºC tempurature
+        text(1,29,"Ambient +1ºC", col="#fc8d59", pos=4, cex=1.6) # label for ambient +1ºC tempurature
+        text(1,27, "Ambient", pos=4, cex=1.6, col="#fdcc8a") # label for ambient temperature
+
+## [1,2] amb +seas CC
+  par(mar=c(2.1,4.1,2.1,2.1))  #Settings for the margins that arrange multiple graphs within one page 
+  plot("","", xlim=c(0,52), ylim=c(10,35), 
+       axes=F, xlab="", ylab="", main="Seasonal Mean Temperature Increase", cex.lab=1.4)
+       lines(week, tempramp[1:52, 1], lwd=3, col="#fdcc8a")     # ambient temperature scenario
+          for(i in 4:5){
+              lines(week, tempramp[1:52,i], col=col_pap[i],lwd=3) #loop with temperature scenario 4-5
+             }
+       axis(2, seq(10,35, 5), cex.axis=1.4) #y axis with prevalence
+       axis(1,m.tic, labels=m.lab, cex.axis=1.4) # x-axis with months
+       text(2,34,"B", cex=1.4) # The letter label
+       text(1,31,"Ambient +SeasºC", col="#980043", pos=4, cex=1.6) # label for seasonally varying temperature
+       text(1,27, "Ambient", pos=4, cex=1.6, col="#fdcc8a") # label for ambient temperature
+       text(1,29, "Ambient +1.6ºC", col="#df65b0", pos=4, cex=1.6) # label for ambient +1.6ºC temperature
+
+############################################################
+#########  second row -  prevalence   #####################
+############################################################
+
+## [2,1] prev by ambient +CC
+  par(mar=c(4.1,4.1,0.1,2.1)) #Settings for the margins that arrange multiple graphs within one page
+  plot("","", xlim=c(0,52), ylim=c(0,60), 
+      axes=F, xlab="", ylab="Infection Prevalence (%)", cex.lab=1.4)
+        for(i in 1:3){
+            lines(week, total_prev[469:520,i]*100, pch=16, col=col_pap[i], lwd=3) #loop with temperature scenario 1-3
+            }
+      axis(2, seq(0,60, 25), cex.axis=1.4) #y axis with prevalence
+      axis(1,m.tic, labels=m.lab, cex.axis=1.4) # x-axis with months
+      text(2, 50, "C", cex=1.4) # The letter label
+## [2,2] prev by ambient +seas
+  plot("","", xlim=c(0,52), ylim=c(0,60), axes=F, xlab="", ylab="")
+      lines(week, total_prev[469:520,1]*100, lwd=3, col="#fdcc8a") # ambient temperature scenario
+      for(i in 4:5){
+          lines(week, total_prev[469:520,i]*100, pch=16, col=col_pap[i], lwd=3) #loop with temperature scenario 4-5
+          }
+      axis(2, seq(0,60, 25), cex.axis=1.4) #y axis with prevalence
+      axis(1,m.tic, labels=m.lab, cex.axis=1.4) # x-axis with months
+      text(2, 50, "D", cex=1.4) # The letter label
+############################################################
+#########  third row - total population      #####################
+############################################################
+
+## [3,2] SEI pop ambient +CC
+  par(mar=c(4.1,4.1,0.1,2.1))
+  plot("","", xlim=c(0,52), ylim=c(0,20000), axes=F, xlab="", ylab="Total Host Abundance", cex.lab=1.4)
+    for(i in 1:3){
+        totpop=pop_s_temp[469:520,i]+pop_e_temp[469:520,i]+pop_i_temp[469:520,i] #sum the population output
+        lines(week, totpop, col=col_pap[i], lwd=3)  #loop with temperature scenario 1-3
+        }
+      axis(2, seq(0,20000, 20000/2), cex.axis=1.4) #y axis with total host abundance    
+      axis(1,m.tic, labels=m.lab, cex.axis=1.4) # x-axis with months
+      text(2, 19000, "E", cex=1.4) # The letter label
+      mtext("Date",side=1,col="black",line=3) #label the x-axis
+
+
+## [3,3] SEI pop ambient +CC
+  plot("","", xlim=c(0,52), ylim=c(0,20000), axes=F, xlab="", ylab="")
+    lines(week, pop_s_temp[469:520,1]+pop_e_temp[469:520,1]+pop_i_temp[469:520,1], lwd=3, col="#fdcc8a") # ambient temperature scenario
+    for(i in 4:5){
+        totpop=pop_s_temp[469:520,i]+pop_e_temp[469:520,i]+pop_i_temp[469:520,i] #sum the pouplation output
+        lines(week, totpop, pch=16, col=col_pap[i], lwd=3) #loop with temperature scenario 4-5
+        }
+    axis(2, seq(0,20000, 20000/2), cex.axis=1.4) #y axis with total host abundance
+    axis(1,m.tic, labels=m.lab, cex.axis=1.4) # x-axis with months
+      text(2, 19000, "F", cex=1.4) # The letter label
+      mtext("Date",side=1,col="black",line=3) #label the x-axis
+
+
+```
+
+
+

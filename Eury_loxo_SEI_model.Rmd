@@ -19,7 +19,7 @@ Correspondence to: 	Alyssa-Lois M. Gehman
 
 *Requirements*
   a. download and install package deSolve
-  b. download and place folder 'Gehman_etal_Code_2017' on your desktop
+  b. download all files to a single folder and open file 'Gehman_codeshare.Rproj'
 
 *1 - Functional fits to the data*
 These define the best fit model parameters for the temperature dependent rates in the SEI mode, as parameterized from the temperature data, and recreate Figure 1C-E.

@@ -36,9 +36,13 @@ To run code with the data first launch the Rproject file: Gehman_codeshare.Rpro
 
 # Data
 Temperature dependent parasite reproduction (Fig. 1B): parasite_rep.csv
+
 Temperature dependent susceptible host survival (Fig. 1C): Susceptible_lifespan.csv
+
 Temperature dependent exposed host survival (Fig. 1D): Exposed_lifespan.csv
+
 Tempearture dependent infected host survival (Fig. 1E): Infected_lifespan.csv
+
 Mean weekly water temperature from LTER-GCE10 mooring from 2011-2014 (Fig. 3A): gce10.wk.mean.csv
 
 # Example Output

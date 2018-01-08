@@ -41,7 +41,7 @@ These define the best fit model parameters for the temperature dependent rates i
 #1b. The data for parasite reproduction over temperature fit to a modified Briere (Fig. 1B).
 #     The output of the nonlinear least squares fit gives estimates of c, T0, Tm.  
       # read in data for parasite reproduction across temperature
-      beta.data<-read.csv("parasite_rep_27Aug17.csv")  
+      beta.data<-read.csv("parasite_rep.csv")  
       #add the path for the directory you are working in to access this data
 
       # The best fit nonlinear least squares model with 1/m=0.65
@@ -74,7 +74,7 @@ These define the best fit model parameters for the temperature dependent rates i
 #1.c The data for susceptible expected lifespan over temperature fit to a Briere (Fig. 1C). The output of the nonlinear least squares fit gives estimates of c, T0, Tm.   
 
       #read in data for susceptible expected lifespan over temperature
-      S.data=read.csv("Susceptible_lifespan_27Aug17.csv") #add the path for the directory you are working in to access this data
+      S.data=read.csv("Susceptible_lifespan.csv") #add the path for the directory you are working in to access this data
 
 
       # The best fit nonlinear least squares model with 1/m=2
@@ -101,7 +101,7 @@ These define the best fit model parameters for the temperature dependent rates i
       
 # 1d. The data for exposed expected lifespan over temperature fit to a modified Briere (Fig. 1D). The output of the nonlinear least squares fit gives estimates of c, T0, Tm. 
       ## read in the data for exposed expected lifespan over temperature
-      E.data=read.csv("Exposed_lifespan_27Aug17.csv") #add the path for the directory you are working in to access this data
+      E.data=read.csv("Exposed_lifespan.csv") #add the path for the directory you are working in to access this data
 
       # The best fit nonlinear least squares model with 1/m=0.4
       vmb1 <- nls(E.surv ~ c*(-E.temp+T0+Tm)*(Tm-E.temp)*(E.temp-T0)^(0.4), data=E.data, start=list(c=.028, T0=4.9, Tm=36))
@@ -127,7 +127,7 @@ These define the best fit model parameters for the temperature dependent rates i
 
 #1e. The data for infected expected lifespan over temperature fit to a modified Briere (Fig. 1E). The output of the nonlinear least squares fit gives estimates of c, T0, Tm. 
       ## read in data for infected expected lifespan over temperature
-      I.data=read.csv("Infected_lifespan_27Aug17.csv") #add the path for the directory you are working in to access this data
+      I.data=read.csv("Infected_lifespan.csv") #add the path for the directory you are working in to access this data
 
       # The best fit nonlinear least squares model with 1/m=0.3
       imb <- nls(I.surv ~ c*(-I.temp+T0+Tm)*(Tm-I.temp)*(I.temp-T0)^(0.3), data=I.data, start=list(c=0.04347, T0=4.99901, Tm=31.85831))
@@ -212,7 +212,7 @@ rm(total_prev) ; rm(pop); rm(pop_e_temp); rm(pop_i_temp); rm(pop_s_temp) # remov
 ### Temperature data - must be in the form of mean weekly temperatures - 1 mean temperature for each of 52 weeks.
 
 # GCE data - load temperature data
-gce10.data=read.csv("gce10.wk.mean_6Dec15.csv") #add the path for the directory you are working in to access this data
+gce10.data=read.csv("gce10.wk.mean.csv") #add the path for the directory you are working in to access this data
 #create a variable with the mean weekly temperatures in it
 gce10.wk.mean=gce10.data$V1
 

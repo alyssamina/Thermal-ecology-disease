@@ -32,7 +32,7 @@ performance to predict infection responses to climate change.
 R: https://www.r-project.org/
 RStudio: https://www.rstudio.com/products/rstudio/download/
 
-To run code, first launch the Rproject file: Gehman_codeshare.Rpro
+To run code download all files to a single folder and open file 'Gehman_codeshare.Rproj'
 
 # Data
 Temperature dependent parasite reproduction (Fig. 1B): parasite_rep.csv

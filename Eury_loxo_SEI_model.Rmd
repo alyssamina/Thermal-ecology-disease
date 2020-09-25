@@ -9,6 +9,8 @@ output:
   pdf_document:
     fig_height: 8
     fig_width: 9
+editor_options: 
+  chunk_output_type: console
 ---
 
 #Host and parasite thermal ecology jointly determine the effect of climate warming on epidemic dynamics 
@@ -303,6 +305,7 @@ for(j in 1:length(tempramp)){
 
 
 ```
+
 
 
 *4 Plotting climate change effects*

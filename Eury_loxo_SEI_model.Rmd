@@ -265,9 +265,9 @@ for(j in 1:length(tempramp)){
         # functional fit - plus a correction with mortality set at a relative maximum when the model goes above the thermal limit of susceptible mortality (34.8ºC)
         mu_s=if (temp>34.8) 6 else 1/fun.b(0.0006923,3.136,34.8,temp, 1/2) 
         # function fit for exposed mortality with a correction set at relative maximum when the model goes above the thermal limit of exposed mortality (34.43)
-        mu_e=if (temp>34.43) 6 else 1/fun.mb(0.03393,4.95039,34.43724,temp,1/0.4) 
+        mu_e=if (temp>34.43) 6 else 1/fun.mb(0.03393,4.95039,34.43724,temp, 1/0.4) 
         # functional fit - plus a correction with mortality set at a relative maximum when the model goes above the thermal limit of infected mortality (31.104ºC)
-        mu_i=if (temp>31.104) 6 else 1/fun.mb(0.04414, 4.99944, 32.10496,temp, 1/0.3) 
+        mu_i=if (temp>32.104) 6 else 1/fun.mb(0.04414, 4.99944, 32.10496,temp, 1/0.3) 
         # Host recruitment is turned on between 32 and 38 weeks
         delta=if (wk.fix>31 & wk.fix<37) 2400 else 0 
         # functional fit - plus a correction with mortality set at a relative maximum when the model goes above the thermal limit of infected mortality (30.75ºC)
